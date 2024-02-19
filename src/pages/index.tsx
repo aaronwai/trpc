@@ -1,7 +1,7 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { CiSearch } from "react-icons/ci";
 import { HiChevronDown } from "react-icons/hi";
-import Modal from "~/components/Modal";
+import WriteFormModal from "~/components/WriteFormModal";
 import { GlobalContext } from "~/contexts/GlobalContext";
 import MainLayout from "~/layouts/MainLayout";
 
@@ -161,12 +161,7 @@ const HomePage = () => {
           </div>
         </aside>
       </section>
-      <Modal
-        isOpen={isWriteModalOpen}
-        onClose={() => setIsWriteModalOpen(false)}
-      >
-        <form onSubmit={(e) => e.preventDefault()}>here is out form</form>
-      </Modal>
+      <WriteFormModal />
     </MainLayout>
   );
 };
