@@ -4,17 +4,18 @@ import { GlobalContext } from "../../contexts/GlobalContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { api } from "~/utils/api";
 
 type WriteFormType = {
   title: string;
   description: string;
-  body: string;
+  text: string;
 };
 
-const writeFormSchema = z.object({
+export const writeFormSchema = z.object({
   title: z.string().min(20),
   description: z.string().min(60),
-  body: z.string().min(100),
+  text: z.string().min(100),
 });
 
 const Write = () => {
@@ -27,7 +28,14 @@ const Write = () => {
     resolver: zodResolver(writeFormSchema),
   });
 
-  const onSubmit = (data: WriteFormType) => console.log(data);
+  const createPost = api.post.createPost.useMutation({
+    onSuccess: () => {
+      console.log("post created successfully !");
+    },
+  });
+  const onSubmit = (data: WriteFormType) => {
+    createPost.mutate(data);
+  };
   return (
     <Modal isOpen={isWriteModalOpen} onClose={() => setIsWriteModalOpen(false)}>
       <form
@@ -55,7 +63,7 @@ const Write = () => {
           {errors.description?.message}
         </p>
         <textarea
-          {...register("body")}
+          {...register("text")}
           id="mainBody"
           cols={10}
           rows={10}
@@ -63,7 +71,7 @@ const Write = () => {
           placeholder="blog main body"
         />
         <p className="w-full pb-10 text-sm text-red-500">
-          {errors.body?.message}
+          {errors.text?.message}
         </p>
         <div className="flex w-full justify-end">
           <button
