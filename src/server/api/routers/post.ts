@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { writeFormSchema } from "~/components/WriteFormModal";
 import slugify from "slugify"
 import {
@@ -21,4 +20,22 @@ export const postRouter = createTRPCRouter({
         }
       })
     }),
+  getPosts: publicProcedure.query(async ({ctx: {db}})=>{
+    const posts = await db.post.findMany({
+      orderBy: {
+        createdAt: "desc"
+      },
+      include: {
+        author: {
+          select: {
+            name:true,
+            image: true
+
+          }
+        }
+      }
+  });
+
+    return posts
+  })  
 });

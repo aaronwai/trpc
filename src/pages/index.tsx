@@ -4,9 +4,14 @@ import { HiChevronDown } from "react-icons/hi";
 import WriteFormModal from "~/components/WriteFormModal";
 import { GlobalContext } from "~/contexts/GlobalContext";
 import MainLayout from "~/layouts/MainLayout";
+import { api } from "~/utils/api";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import dayjs from "dayjs";
+import Image from "next/image";
 
 const HomePage = () => {
   const { isWriteModalOpen, setIsWriteModalOpen } = useContext(GlobalContext);
+  const getPosts = api.post.getPosts.useQuery();
   return (
     <MainLayout>
       <section className="grid h-full w-full grid-cols-12 place-items-center">
@@ -55,56 +60,71 @@ const HomePage = () => {
             </div>
           </div>
           <div className="flex w-full flex-col justify-center space-y-8">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="group flex flex-col space-y-4 border-b border-gray-300 pb-8 last:border-none"
-              >
-                <div className="flex w-full items-center space-x-2">
-                  <div className="h-10 w-10 rounded-full bg-gray-400"></div>
-                  <div>
-                    <p className="font-semibold">aaron &#x2022; 17-2-2024</p>
-                    <p className="text-sm">personal info</p>
-                  </div>
+            {getPosts.isLoading && (
+              <div className="h-full w-full items-center justify-center">
+                <div>Loading...</div>
+                <div>
+                  <AiOutlineLoading3Quarters className="animate-spin" />
                 </div>
-                <div className="grid w-full grid-cols-12 gap-4">
-                  <div className="col-span-8 flex flex-col space-y-4">
-                    <p className="text-2xl font-bold text-gray-800 decoration-indigo-600 group-hover:underline">
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                      Obcaecati, accusantium.
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                      Fugiat blanditiis recusandae reiciendis dolorum, beatae,
-                      odit architecto hic laboriosam minima fuga voluptatem!
-                      Modi officia esse tempore omnis magni, recusandae impedit
-                      ratione exercitationem fugit in praesentium natus!
-                      Voluptates ea aut laudantium id deleniti magni expedita
-                      quas minima dolore necessitatibus laboriosam placeat esse
-                      eligendi reprehenderit at, vel saepe nemo fuga optio
-                      quaerat modi?
-                    </p>
+              </div>
+            )}
+            {/* add the get post */}
+            {getPosts.isSuccess &&
+              getPosts.data.map((post) => (
+                <div
+                  key={post.id}
+                  className="group flex flex-col space-y-4 border-b border-gray-300 pb-8 last:border-none"
+                >
+                  <div className="flex w-full items-center space-x-2">
+                    <div className="relative h-10 w-10  rounded-full bg-gray-400">
+                      {post.author.image && (
+                        <Image
+                          src={post.author.image}
+                          fill
+                          alt={post.author.name ?? ""}
+                          className="rounded-full"
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold">
+                        {post.author.name} &#x2022;{" "}
+                        <span className="mx-1">
+                          {dayjs(post.createdAt).format("DD/MM/YYYY")}
+                        </span>
+                      </p>
+                      <p className="text-sm">personal info</p>
+                    </div>
                   </div>
-                  <div className="col-span-4">
-                    <div className=" h-full w-full transform rounded-xl bg-gray-300 transition duration-300 hover:scale-105 hover:shadow-xl">
-                      image
+                  <div className="grid w-full grid-cols-12 gap-4">
+                    <div className="col-span-8 flex flex-col space-y-4">
+                      <p className="text-2xl font-bold text-gray-800 decoration-indigo-600 group-hover:underline">
+                        {post.title}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {post.description}
+                      </p>
+                    </div>
+                    <div className="col-span-4">
+                      <div className=" h-full w-full transform rounded-xl bg-gray-300 transition duration-300 hover:scale-105 hover:shadow-xl">
+                        image
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex w-full items-center justify-start space-x-4">
+                    <div className="flex items-center space-x-2">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="rounded-3xl bg-gray-200/50 px-6 py-2.5"
+                        >
+                          tag {i}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
-                <div className="flex w-full items-center justify-start space-x-4">
-                  <div className="flex items-center space-x-2">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="rounded-3xl bg-gray-200/50 px-6 py-2.5"
-                      >
-                        tag {i}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </main>
         <aside className="col-span-4 flex h-full w-full flex-col space-y-4 p-6">

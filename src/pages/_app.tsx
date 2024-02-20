@@ -6,13 +6,14 @@ import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
 import GlobalContextProvider from "~/contexts/GlobalContext";
-
+import { Toaster } from "react-hot-toast";
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
   return (
     <SessionProvider session={session}>
+      <Toaster />
       <GlobalContextProvider>
         <Component {...pageProps} />
       </GlobalContextProvider>
