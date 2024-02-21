@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import React from "react";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { CiSearch } from "react-icons/ci";
+import { CiBookmarkCheck, CiBookmarkPlus, CiSearch } from "react-icons/ci";
 import { HiChevronDown } from "react-icons/hi";
 import { api } from "~/utils/api";
 import Image from "next/image";
@@ -9,6 +9,8 @@ import Link from "next/link";
 
 const MainSection = () => {
   const getPosts = api.post.getPosts.useQuery();
+  const bookmarkPost = api.post.bookmarkPost.useMutation();
+  const removeBookmarkPost = api.post.removeBookmarkPost.useMutation();
   return (
     <main className="col-span-8 h-full w-full border-r border-gray-300 px-24">
       <div className="flex w-full flex-col space-y-4 py-10">
@@ -60,11 +62,9 @@ const MainSection = () => {
             </div>
           </div>
         )}
-        {/* add the get post */}
         {getPosts.isSuccess &&
           getPosts.data.map((post) => (
-            <Link
-              href={`/${post.slug}`}
+            <div
               key={post.id}
               className="group flex flex-col space-y-4 border-b border-gray-300 pb-8 last:border-none"
             >
@@ -89,7 +89,10 @@ const MainSection = () => {
                   <p className="text-sm">personal info</p>
                 </div>
               </div>
-              <div className="grid w-full grid-cols-12 gap-4">
+              <Link
+                className="grid w-full grid-cols-12 gap-4"
+                href={`/${post.slug}`}
+              >
                 <div className="col-span-8 flex flex-col space-y-4">
                   <p className="text-2xl font-bold text-gray-800 decoration-indigo-600 group-hover:underline">
                     {post.title}
@@ -101,20 +104,39 @@ const MainSection = () => {
                     image
                   </div>
                 </div>
-              </div>
-              <div className="flex w-full items-center justify-start space-x-4">
-                <div className="flex items-center space-x-2">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="rounded-3xl bg-gray-200/50 px-6 py-2.5"
-                    >
-                      tag {i}
-                    </div>
-                  ))}
+              </Link>
+              <div>
+                <div className="flex w-full items-center justify-between space-x-4">
+                  <div className="flex items-center space-x-2">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-3xl bg-gray-200/50 px-6 py-2.5"
+                      >
+                        tag {i}
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    {post.bookmarks && post.bookmarks.length > 0 ? (
+                      <CiBookmarkCheck
+                        className="cursor-pointer text-3xl text-indigo-600"
+                        onClick={() => {
+                          removeBookmarkPost.mutate({ postId: post.id });
+                        }}
+                      />
+                    ) : (
+                      <CiBookmarkPlus
+                        className="text-3xl"
+                        onClick={() => {
+                          bookmarkPost.mutate({ postId: post.id });
+                        }}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
-            </Link>
+            </div>
           ))}
       </div>
     </main>

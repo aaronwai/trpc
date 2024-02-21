@@ -21,19 +21,28 @@ export const postRouter = createTRPCRouter({
         }
       })
     }),
-  getPosts: publicProcedure.query(async ({ctx: {db}})=>{
+  getPosts: publicProcedure.query(async ({ctx: {db, session}})=>{
     const posts = await db.post.findMany({
       orderBy: {
         createdAt: "desc"
       },
-      include: {
+      select: {
+        id:true,
+        slug:true,
+        title:true,
+        description:true,
+        createdAt : true,
         author: {
-          select: {
-            name:true,
-            image: true
-
-          }
-        }
+              select: {
+                name:true,
+                image: true
+              }
+            },
+           bookmarks: session?.user?.id ? {
+            where: {
+              userId: session?.user?.id
+            }
+           } : false
       }
   });
     return posts
@@ -77,5 +86,22 @@ export const postRouter = createTRPCRouter({
          userId : session.user.id}
       }
     })
-   })
+   }),
+
+   bookmarkPost: protectedProcedure.input(z.object({postId : z.string()})).mutation(async ({ctx: {db, session}, input : {postId}}) => {
+    await db.bookmark.create({
+      data: {
+        userId : session.user.id, postId
+      }
+    })
+   }),
+   removeBookmarkPost: protectedProcedure.input(z.object({postId : z.string()})).mutation(async ({ctx: {db, session}, input : {postId}}) => {
+    await db.bookmark.delete({
+      where : {
+        userId_postId: {
+          postId : postId,
+         userId : session.user.id}
+      }
+    })
+   }),
 });
