@@ -1,8 +1,10 @@
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useCallback } from "react";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import MainLayout from "~/layouts/MainLayout";
 import { api } from "~/utils/api";
+import { FcLikePlaceholder, FcLike } from "react-icons/fc";
+import { BsChat } from "react-icons/bs";
 
 const PostPage = () => {
   const router = useRouter();
@@ -14,6 +16,20 @@ const PostPage = () => {
       enabled: !!router.query.slug,
     },
   );
+  const postRoute = api.useUtils().post;
+  const invalidateCurrentPostPage = useCallback(() => {
+    postRoute.getPost.invalidate({ slug: router.query.slug as string });
+  }, [postRoute.getPost, router.query.slug]);
+  const likePost = api.post.likePost.useMutation({
+    onSuccess: () => {
+      invalidateCurrentPostPage();
+    },
+  });
+  const disLikePost = api.post.disLikePost.useMutation({
+    onSuccess: () => {
+      invalidateCurrentPostPage();
+    },
+  });
   return (
     <MainLayout>
       {getPost.isLoading && (
@@ -21,6 +37,34 @@ const PostPage = () => {
           <div>Loading...</div>
           <div>
             <AiOutlineLoading3Quarters className="animate-spin" />
+          </div>
+        </div>
+      )}
+      {getPost.isSuccess && (
+        <div className="fixed bottom-10 flex w-full items-center justify-center">
+          <div className="group flex space-x-4 rounded-full border border-gray-400 bg-white px-6 py-3 transition duration-300 hover:border-gray-900">
+            <div className="border-r pr-4 transition duration-300 group-hover:border-gray-900">
+              {getPost.data?.likes && getPost.data?.likes.length > 0 ? (
+                <FcLike
+                  className="cursor-pointer text-xl"
+                  onClick={() =>
+                    getPost.data?.id &&
+                    disLikePost.mutate({ postId: getPost.data?.id })
+                  }
+                />
+              ) : (
+                <FcLikePlaceholder
+                  className="cursor-pointer text-xl"
+                  onClick={() =>
+                    getPost.data?.id &&
+                    likePost.mutate({ postId: getPost.data?.id })
+                  }
+                />
+              )}
+            </div>
+            <div>
+              <BsChat className="text-base" />
+            </div>
           </div>
         </div>
       )}

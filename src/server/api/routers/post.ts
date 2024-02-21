@@ -41,12 +41,41 @@ export const postRouter = createTRPCRouter({
    getPost : publicProcedure.input(z.object({
     slug: z.string()
    }))
-   .query(async ({ctx: {db}, input:{slug}})=>{
+   .query(async ({ctx: {db, session}, input:{slug}})=>{
     const post = await db.post.findUnique({
       where : {
         slug
+      },
+      select : {
+        id: true,
+        description : true,
+        title : true,
+        text : true,
+        likes : session?.user?.id? {
+          where : {
+            userId : session?.user?.id
+          }
+        } : false
       }
     })
     return post
-   }), 
+   }),
+   
+   likePost: protectedProcedure.input(z.object({postId : z.string()})).mutation(async ({ctx: {db, session}, input : {postId}}) => {
+    await db.like.create({
+      data: {
+        userId : session.user.id, postId
+      }
+    })
+   }),
+
+   disLikePost: protectedProcedure.input(z.object({postId : z.string()})).mutation(async ({ctx: {db, session}, input : {postId}}) => {
+    await db.like.delete({
+      where : {
+        userId_postId: {
+          postId : postId,
+         userId : session.user.id}
+      }
+    })
+   })
 });
