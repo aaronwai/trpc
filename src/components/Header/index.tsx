@@ -1,4 +1,5 @@
 import { signOut, signIn, useSession } from "next-auth/react";
+import Link from "next/link";
 import React, { useContext } from "react";
 import { BsBell } from "react-icons/bs";
 import { FiEdit } from "react-icons/fi";
@@ -14,9 +15,12 @@ const Header = () => {
       <div>
         <IoReorderThreeOutline className="text-2xl text-gray-600" />
       </div>
-      <div className="whitespace-normal text-xl font-thin">
+      <Link
+        href={"/"}
+        className="cursor-pointer select-none whitespace-normal text-xl font-thin"
+      >
         ultimate blog App
-      </div>
+      </Link>
       {status === "authenticated" ? (
         <div className="flex items-center space-x-2">
           <div>

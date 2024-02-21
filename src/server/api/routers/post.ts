@@ -5,6 +5,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+import { z } from "zod";
 
 export const postRouter = createTRPCRouter({
 
@@ -35,7 +36,17 @@ export const postRouter = createTRPCRouter({
         }
       }
   });
-
     return posts
-  })  
+  }),
+   getPost : publicProcedure.input(z.object({
+    slug: z.string()
+   }))
+   .query(async ({ctx: {db}, input:{slug}})=>{
+    const post = await db.post.findUnique({
+      where : {
+        slug
+      }
+    })
+    return post
+   }), 
 });
