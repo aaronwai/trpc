@@ -1,10 +1,12 @@
 import { useRouter } from "next/router";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import MainLayout from "~/layouts/MainLayout";
 import { api } from "~/utils/api";
 import { FcLikePlaceholder, FcLike } from "react-icons/fc";
 import { BsChat } from "react-icons/bs";
+
+import CommentSidebar from "~/components/CommentSidebar";
 
 const PostPage = () => {
   const router = useRouter();
@@ -30,8 +32,17 @@ const PostPage = () => {
       invalidateCurrentPostPage();
     },
   });
+  const [showCommentSidebar, setShowCommentSidebar] = useState(false);
   return (
     <MainLayout>
+      {getPost.data?.id && (
+        <CommentSidebar
+          showCommentSidebar={showCommentSidebar}
+          setShowCommentSidebar={setShowCommentSidebar}
+          postId={getPost.data?.id}
+        />
+      )}
+
       {getPost.isLoading && (
         <div className="h-full w-full items-center justify-center">
           <div>Loading...</div>
@@ -43,7 +54,7 @@ const PostPage = () => {
       {getPost.isSuccess && (
         <div className="fixed bottom-10 flex w-full items-center justify-center">
           <div className="group flex space-x-4 rounded-full border border-gray-400 bg-white px-6 py-3 transition duration-300 hover:border-gray-900">
-            <div className="border-r pr-4 transition duration-300 group-hover:border-gray-900">
+            <div className="border-r pr-4 shadow-xl transition duration-300 group-hover:border-gray-900">
               {getPost.data?.likes && getPost.data?.likes.length > 0 ? (
                 <FcLike
                   className="cursor-pointer text-xl"
@@ -63,7 +74,10 @@ const PostPage = () => {
               )}
             </div>
             <div>
-              <BsChat className="text-base" />
+              <BsChat
+                className="cursor-pointer text-base"
+                onClick={() => setShowCommentSidebar(true)}
+              />
             </div>
           </div>
         </div>

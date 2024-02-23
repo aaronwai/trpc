@@ -7,6 +7,7 @@ import {
 } from "~/server/api/trpc";
 import { z } from "zod";
 
+
 export const postRouter = createTRPCRouter({
 
   createPost: protectedProcedure.input(writeFormSchema)
@@ -104,4 +105,23 @@ export const postRouter = createTRPCRouter({
       }
     })
    }),
+   submitComment : protectedProcedure.input(z.object({
+    text: z.string().min(3),
+    postId: z.string(),
+  })).mutation(async ({ctx:{db, session}, input: {text, postId}})=> {
+    await db.comment.create({
+      data : {
+        text,
+        user: {
+          connect : {
+            id:session.user.id
+          }
+        },
+        post : {
+          connect: { id : postId
+          }
+        }
+      }
+    })
+   })
 });
