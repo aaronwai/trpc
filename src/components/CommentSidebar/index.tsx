@@ -6,7 +6,10 @@ import toast from "react-hot-toast";
 import { HiXMark } from "react-icons/hi2";
 import { z } from "zod";
 import { api } from "~/utils/api";
-
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import error from "next/error";
+dayjs.extend(relativeTime);
 type CommentSidebarProps = {
   showCommentSidebar: boolean;
   setShowCommentSidebar: React.Dispatch<React.SetStateAction<boolean>>;
@@ -28,18 +31,24 @@ const CommentSidebar = ({
     register,
     handleSubmit,
     formState: { isValid },
+    reset,
   } = useForm<CommentFormType>({
     resolver: zodResolver(commentFormSchema),
   });
 
+  const postRoute = api.useUtils().post;
   const submitComment = api.post.submitComment.useMutation({
     onSuccess: () => {
       toast.success("Success !");
+      postRoute.getComments.invalidate({ postId });
+      reset();
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
+
+  const getComments = api.post.getComments.useQuery({ postId });
 
   return (
     <Transition.Root show={showCommentSidebar} as={Fragment}>
@@ -87,24 +96,24 @@ const CommentSidebar = ({
                   )}
                 </form>
                 <div className="flex flex-col items-center justify-center space-y-6">
-                  {Array.from({ length: 7 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex w-full flex-col space-y-2 border-b border-b-gray-300 pb-4 last:border-none"
-                    >
-                      <div className="flex w-full items-center space-x-2">
-                        <div className="relative h-8 w-8 rounded-full bg-gray-400"></div>
-                        <div>
-                          <p className="font-semibold">aaron</p>
-                          <p>2 hours</p>
+                  {getComments.isSuccess &&
+                    getComments.data.map((comment) => (
+                      <div
+                        key={comment.id}
+                        className="flex w-full flex-col space-y-2 border-b border-b-gray-300 pb-4 last:border-none"
+                      >
+                        <div className="flex w-full items-center space-x-2">
+                          <div className="relative h-8 w-8 rounded-full bg-gray-400"></div>
+                          <div>
+                            <p className="font-semibold">{comment.user.name}</p>
+                            <p>{dayjs(comment.createdAt).fromNow()}</p>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {comment.text}
                         </div>
                       </div>
-                      <div className="text-sm text-gray-600">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                        Ducimus, numquam!
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             </Dialog.Panel>

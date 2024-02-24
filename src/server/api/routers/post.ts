@@ -123,5 +123,27 @@ export const postRouter = createTRPCRouter({
         }
       }
     })
-   })
+   }),
+
+   getComments : publicProcedure.input(
+    z.object({postId:z.string()})).query(async ({ctx: {db}, input: {postId}})=>{
+      const comments = await db.comment.findMany({
+        where : {
+          postId
+        },
+        select : {
+          id : true,
+          text:true,
+          user: {
+            select : {name : true, image: true }
+          },
+          createdAt: true
+        },
+        orderBy: {
+          createdAt : 'desc'
+        }
+      })
+      return comments
+    }),
+
 });
