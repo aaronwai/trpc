@@ -146,4 +146,33 @@ export const postRouter = createTRPCRouter({
       return comments
     }),
 
+    getReadingList : protectedProcedure.query(async ({ctx: {db, session}}) => {
+      const allBookmarks = await db.bookmark.findMany({
+        where : {
+          userId : session.user.id
+        },
+        take : 4,
+        orderBy: { 
+          createdAt : "desc" 
+        },
+        select : {
+          id : true,
+          post : { 
+            select :{
+              title : true,
+              description : true,
+              slug : true,
+              author : {
+                select : {
+                  name : true,
+                  image : true,
+                }
+              },
+              createdAt: true,
+            }
+          }
+        }
+      });
+    return allBookmarks;
+    })
 });
