@@ -9,6 +9,7 @@ import GoogleProvider from "next-auth/providers/google";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
+import { generateUsername } from "~/utils/generateUsername";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -51,6 +52,16 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      profile(profile) {
+        const givenName = profile.name ?? ""
+        return {
+          id: profile.sub,
+          name:profile.name,
+          email : profile.email,
+          image: profile.picture,
+          username : generateUsername(profile.name)
+        }
+      }
     }),
   ],
 
